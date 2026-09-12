@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BudgetWise — Smart Budget Tracker</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   { DEFAULT: '#2563EB', light: '#3B82F6', dark: '#1D4ED8' },
+            accent:    { DEFAULT: '#F97316', light: '#FB923C', dark: '#EA580C' },
+            surface:   '#F8FAFF',
+            card:      '#FFFFFF',
+          },
+          fontFamily: {
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="bg-surface font-sans text-gray-800 min-h-screen">
+
+  <!-- =========================================================
+       HEADER / NAVBAR
+  ========================================================= -->
+  <header class="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <span class="text-lg font-bold text-gray-900">Budget<span class="text-primary">Wise</span></span>
+      </div>
+
+      <!-- Month Selector -->
+      <div class="flex items-center gap-2">
+        <label for="monthSelector" class="text-sm text-gray-500 hidden sm:block">Period:</label>
+        <input id="monthSelector" type="month"
+          class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white cursor-pointer" />
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       MAIN CONTENT
+  ========================================================= -->
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- ── ROW 1 : Budget Setup + Summary Cards ────────────────── -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Budget Setup Card -->
+      <div class="card lg:col-span-1">
+        <div class="card-header">
+          <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <h2 class="card-title">Monthly Budget</h2>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="form-label">Total Budget (Rp)</label>
+            <div class="flex gap-2">
+              <input id="budgetInput" type="number" placeholder="e.g. 5000000" min="0"
+                class="form-input flex-1" />
+              <button id="setBudgetBtn" class="btn btn-primary px-4">Set</button>
+            </div>
+          </div>
+          <!-- Budget progress bar -->
+          <div class="pt-1">
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+              <span>Spent</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+              <div id="budgetProgressBar" class="h-full rounded-full bg-primary transition-all duration-500" style="width:0%"></div>
+            </div>
+          </div>
+          <!-- Health Score -->
+          <div id="healthScoreBlock" class="health-score-block hidden">
+            <span class="text-xs text-gray-500">Financial Health</span>
+            <div class="flex items-center gap-2 mt-1">
+              <div id="healthScoreCircle" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white bg-green-500">100</div>
+              <div>
+                <p id="healthScoreLabel" class="text-sm font-semibold text-gray-700">Excellent</p>
+                <p id="healthScoreDesc" class="text-xs text-gray-400">Keep it up!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="stat-card border-blue-100">
+          <span class="stat-label">Budget</span>
+          <span id="statBudget" class="stat-value text-primary">Rp 0</span>
+        </div>
+        <div class="stat-card border-red-100">
+          <span class="stat-label">Spent</span>
+          <span id="statSpent" class="stat-value text-red-500">Rp 0</span>
+        </div>
+        <div class="stat-card border-green-100">
+          <span class="stat-label">Remaining</span>
+          <span id="statRemaining" class="stat-value text-green-600">Rp 0</span>
+        </div>
+        <div class="stat-card border-orange-100">
+          <span class="stat-label">Daily Rec.</span>
+          <span id="statDaily" class="stat-value text-accent">Rp 0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── BUDGET WARNING BANNER ───────────────────────────────── -->
+    <div id="warningBanner" class="hidden items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span id="warningText">Warning: You are close to your budget limit!</span>
+    </div>
+
+    <!-- ── ROW 2 : Add Expense + Can I Afford ─────────────────── -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Add Expense Form -->
+      <div class="card lg:col-span-2">
+        <div class="card-header">
+          <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <h2 class="card-title">Add Expense</h2>
+        </div>
+        <form id="expenseForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3" novalidate>
+          <div>
+            <label class="form-label">Description <span class="text-red-400">*</span></label>
+            <input id="expenseDesc" type="text" placeholder="e.g. Groceries" class="form-input" maxlength="60" />
+          </div>
+          <div>
+            <label class="form-label">Amount (Rp) <span class="text-red-400">*</span></label>
+            <input id="expenseAmount" type="number" placeholder="e.g. 150000" min="1" class="form-input" />
+          </div>
+          <div>
+            <label class="form-label">Category <span class="text-red-400">*</span></label>
+            <select id="expenseCategory" class="form-input">
+              <option value="">— Select Category —</option>
+              <option value="Food & Drinks">🍔 Food &amp; Drinks</option>
+              <option value="Transportation">🚗 Transportation</option>
+              <option value="Housing">🏠 Housing</option>
+              <option value="Health">💊 Health</option>
+              <option value="Shopping">🛍️ Shopping</option>
+              <option value="Entertainment">🎬 Entertainment</option>
+              <option value="Education">📚 Education</option>
+              <option value="Utilities">💡 Utilities</option>
+              <option value="Savings">💰 Savings</option>
+              <option value="Others">📦 Others</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Date</label>
+            <input id="expenseDate" type="date" class="form-input" />
+          </div>
+          <div class="sm:col-span-2 flex gap-2 pt-1">
+            <button type="submit" id="submitExpenseBtn" class="btn btn-accent flex-1 sm:flex-none">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Expense
+            </button>
+            <button type="button" id="cancelEditBtn" class="btn btn-ghost hidden">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Can I Afford This? + Category Budget -->
+      <div class="space-y-4">
+
+        <!-- Can I Afford This? -->
+        <div class="card">
+          <div class="card-header">
+            <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="card-title">Can I Afford This?</h2>
+          </div>
+          <div class="space-y-2">
+            <input id="affordInput" type="number" placeholder="Enter amount (Rp)" min="1" class="form-input w-full" />
+            <button id="affordBtn" class="btn btn-primary w-full">Check</button>
+            <div id="affordResult" class="hidden text-sm rounded-lg px-3 py-2 font-medium text-center"></div>
+          </div>
+        </div>
+
+        <!-- Category Budget Limits -->
+        <div class="card">
+          <div class="card-header">
+            <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <h2 class="card-title">Category Limits</h2>
+          </div>
+          <div id="categoryLimitsList" class="space-y-2 text-sm text-gray-500 italic">
+            Set a budget first to configure limits.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── ROW 3 : Spending Breakdown + Monthly Comparison ─────── -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <!-- Spending Breakdown by Category -->
+      <div class="card">
+        <div class="card-header">
+          <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
+          <h2 class="card-title">Spending Breakdown</h2>
+        </div>
+        <div id="breakdownList" class="space-y-2.5">
+          <p class="text-sm text-gray-400 italic">No expenses yet.</p>
+        </div>
+      </div>
+
+      <!-- Monthly Comparison -->
+      <div class="card">
+        <div class="card-header">
+          <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <h2 class="card-title">Monthly Comparison</h2>
+        </div>
+        <div id="monthlyComparisonChart" class="space-y-2">
+          <p class="text-sm text-gray-400 italic">No data for comparison yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ROW 4 : Transaction History ──────────────────────────── -->
+    <section class="card">
+      <div class="card-header justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h2 class="card-title">Transaction History</h2>
+        </div>
+        <!-- Filter + Search -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <input id="searchInput" type="text" placeholder="Search…" class="form-input py-1.5 text-sm w-36" />
+          <select id="filterCategory" class="form-input py-1.5 text-sm">
+            <option value="">All Categories</option>
+            <option value="Food & Drinks">Food &amp; Drinks</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Housing">Housing</option>
+            <option value="Health">Health</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Education">Education</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Savings">Savings</option>
+            <option value="Others">Others</option>
+          </select>
+          <button id="clearAllBtn" class="btn btn-ghost text-red-400 hover:text-red-600 text-sm hidden">Clear All</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto -mx-5 px-5">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-gray-400 uppercase border-b border-gray-100">
+              <th class="pb-2 font-medium">Description</th>
+              <th class="pb-2 font-medium">Category</th>
+              <th class="pb-2 font-medium hidden sm:table-cell">Date</th>
+              <th class="pb-2 font-medium text-right">Amount</th>
+              <th class="pb-2 font-medium text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="transactionBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+        <p id="emptyState" class="text-center text-gray-400 text-sm py-8 italic">No transactions found. Add your first expense above!</p>
+      </div>
+
+      <!-- Total row -->
+      <div class="border-t border-gray-100 mt-3 pt-3 flex justify-between items-center text-sm">
+        <span class="text-gray-500">Showing <span id="txCount">0</span> transaction(s)</span>
+        <span class="font-semibold text-gray-700">Total: <span id="txTotal" class="text-red-500">Rp 0</span></span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       EDIT MODAL
+  ========================================================= -->
+  <div id="editModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modalTitle" class="text-base font-semibold text-gray-800">Edit Expense</h3>
+        <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="editForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3" novalidate>
+        <input type="hidden" id="editId" />
+        <div>
+          <label class="form-label">Description</label>
+          <input id="editDesc" type="text" class="form-input" maxlength="60" />
+        </div>
+        <div>
+          <label class="form-label">Amount (Rp)</label>
+          <input id="editAmount" type="number" min="1" class="form-input" />
+        </div>
+        <div>
+          <label class="form-label">Category</label>
+          <select id="editCategory" class="form-input">
+            <option value="Food & Drinks">🍔 Food &amp; Drinks</option>
+            <option value="Transportation">🚗 Transportation</option>
+            <option value="Housing">🏠 Housing</option>
+            <option value="Health">💊 Health</option>
+            <option value="Shopping">🛍️ Shopping</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Education">📚 Education</option>
+            <option value="Utilities">💡 Utilities</option>
+            <option value="Savings">💰 Savings</option>
+            <option value="Others">📦 Others</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Date</label>
+          <input id="editDate" type="date" class="form-input" />
+        </div>
+        <div class="sm:col-span-2 flex gap-2 pt-1">
+          <button type="submit" class="btn btn-primary flex-1">Save Changes</button>
+          <button type="button" id="closeModalBtnAlt" class="btn btn-ghost flex-1">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast hidden" role="alert" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
